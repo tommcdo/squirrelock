@@ -12,14 +12,14 @@ class Controller_Squirrelock extends Controller {
 		$references = $squirrelock->inbound_references($pk);
 		$details = $squirrelock->details($pk);
 
-		$view = View::factory('squirrelock/index');
-		$view->table = $table;
-		$view->pk = $pk;
-		$view->details = $details;
-		$view->references = $references;
-		$view->primary_keys = $primary_keys;
+		$twig = Twig::factory('squirrelock/index');
+		$twig->table = $table;
+		$twig->pk = $pk;
+		$twig->details = $details;
+		$twig->references = $references;
+		$twig->primary_keys = $primary_keys;
 
-		$this->response->body($view);
+		$this->response->body($twig);
 	}
 
 } // End Squirrelock

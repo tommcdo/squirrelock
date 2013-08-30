@@ -1,0 +1,51 @@
+<html>
+	<head>
+		<style type="text/css">
+			li.link {
+				display: inline-block;
+				width: 100px;
+				padding: 3px 0;
+			}
+			td, th {
+				padding: 0 3px;
+				border: 1px solid #ddd;
+				border-top: 0;
+				border-left: 0;
+			}
+			th {
+				text-align: right;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>{{ table }} ({{ pk }})</h1>
+		<h2>Record details</h2>
+		<table>
+			{% for property, value in details %}
+				<tr>
+					<th>{{ property }}</th>
+					<td>{{ value }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+		<h2>Inbound references</h2>
+		<ul>
+			{% for reference, pks in references %}
+				<li>
+					<h3>{{ reference }}</h3>
+					<ul>
+						{% for pk in pks.references %}
+							<li class="link"><a href="/squirrelock/{{ pks.table }}/{{ pk }}">{{ pk }}</a></li>
+						{% endfor %}
+					</ul>
+				</li>
+			{% endfor %}
+		</ul>
+		<h2>Other {{ table }} records</h2>
+		<ul>
+			{% for primary_key in primary_keys %}
+				<li class="link"><a href="/squirrelock/{{ table }}/{{ primary_key }}">{{ primary_key }}</a></li>
+			{% endfor %}
+		</ul>
+	</body>
+</html>
