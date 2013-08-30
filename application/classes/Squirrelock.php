@@ -13,6 +13,11 @@ class Squirrelock {
 	protected $_table;
 
 	/**
+	 * Primary key column name for each table.
+	 */
+	protected $_primary_key = array();
+
+	/**
 	 * All tables with in-bound foreign keys to this table.
 	 */
 	protected $_referencing_tables = NULL;
@@ -35,14 +40,33 @@ class Squirrelock {
 	}
 
 	/**
+	 * Get the primary key column name for this table.
+	 */
+	public function primary_key($table = NULL)
+	{
+		if ($table === NULL)
+		{
+			$table = $this->_table;
+		}
+
+		if ( ! array_key_exists($table, $this->_primary_key))
+		{
+			$this->_primary_key[$table] = Arr::get($this->_table_detail($table), 'primary_key');
+		}
+
+		return $this->_primary_key[$table];
+	}
+
+	/**
 	 * Get an array of existing primary key values within this table.
 	 */
 	public function primary_keys()
 	{
-		$primary_keys = DB::select('id')
+		$primary_key = $this->primary_key();
+		$primary_keys = DB::select($primary_key)
 			->from($this->_table)
 			->execute()
-			->as_array(NULL, 'id');
+			->as_array(NULL, $primary_key);
 
 		return $primary_keys;
 	}
@@ -54,7 +78,7 @@ class Squirrelock {
 	{
 		$record = DB::select('*')
 			->from($this->_table)
-			->where('id', '=', $pk)
+			->where($this->primary_key(), '=', $pk)
 			->execute();
 
 		return $record[0];
@@ -90,14 +114,19 @@ class Squirrelock {
 			$table_detail = $this->_table_detail($table);
 			if ( ! $table_detail['pivot'])
 			{
-				$refs = DB::select('id')
+				$primary_key = $this->primary_key($table);
+				$refs = DB::select($primary_key)
 					->from($table)
 					->where($column, '=', $pk)
 					->execute()
-					->as_array(NULL, 'id');
+					->as_array(NULL, $primary_key);
 				if (count($refs) > 0)
 				{
-					$references["$table.$column"] = $refs;
+					$references["$table.$column"] = array(
+						'table'      => $table,
+						'column'     => $column,
+						'references' => $refs,
+					);
 				}
 			}
 			else
@@ -106,7 +135,7 @@ class Squirrelock {
 				{
 					$ref_table = $reference['table'];
 					$ref_column = $reference['column'];
-					if ($ref_table === $this->_table AND $ref_column === 'id')
+					if ($ref_table === $this->_table AND $ref_column === $this->primary_key())
 						continue;
 
 					$refs = DB::select($foreign_key)
@@ -116,7 +145,11 @@ class Squirrelock {
 						->as_array(NULL, $foreign_key);
 					if (count($refs) > 0)
 					{
-						$references["$ref_table.$ref_column ($table.$column)"] = $refs;
+						$references["$ref_table.$ref_column ($table.$column)"] = array(
+							'table'      => $ref_table,
+							'column'     => $ref_column,
+							'references' => $refs,
+						);
 					}
 				}
 			}
