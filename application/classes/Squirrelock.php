@@ -2,14 +2,29 @@
 
 class Squirrelock {
 
+	/**
+	 * The database name we are connecting to.
+	 */
 	protected $_table_schema = NULL;
 
+	/**
+	 * Table this instance will be dealing with.
+	 */
 	protected $_table;
 
+	/**
+	 * All tables with in-bound foreign keys to this table.
+	 */
 	protected $_referencing_tables = NULL;
 
+	/**
+	 * Detailed information about various tables.
+	 */
 	protected $_table_detail = array();
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct($table)
 	{
 		if ($this->_table_schema === NULL)
@@ -19,6 +34,9 @@ class Squirrelock {
 		$this->_table = $table;
 	}
 
+	/**
+	 * Get an array of existing primary key values within this table.
+	 */
 	public function primary_keys()
 	{
 		$primary_keys = DB::select('id')
@@ -29,6 +47,9 @@ class Squirrelock {
 		return $primary_keys;
 	}
 
+	/**
+	 * Get record details for a particular primary key.
+	 */
 	public function details($pk)
 	{
 		$record = DB::select('*')
@@ -39,6 +60,9 @@ class Squirrelock {
 		return $record[0];
 	}
 
+	/**
+	 * Find a list of tables with an in-bound foreign key to this table.
+	 */
 	public function referencing_tables()
 	{
 		if ($this->_referencing_tables === NULL)
@@ -53,6 +77,9 @@ class Squirrelock {
 		return $this->_referencing_tables;
 	}
 
+	/**
+	 * Get actual records referencing this table.
+	 */
 	public function inbound_references($pk)
 	{
 		$references = array();
@@ -97,6 +124,9 @@ class Squirrelock {
 		return $references;
 	}
 
+	/**
+	 * Get detailed information about a table.
+	 */
 	protected function _table_detail($table)
 	{
 		if ( ! array_key_exists($table, $this->_table_detail))
